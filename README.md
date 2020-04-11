@@ -28,7 +28,38 @@ Argus Monitor will detect and use any such device as long as the serial communic
 
 ## Communication protocol
 
-todo
+| Command    | Argus Monitor request         | Argus Controller answer |
+|---|---|---|
+|ProbeDevice | AA 02 01 crc8                 | C5 [byteCnt] 01 [DEVICE_ID] [TEMP_COUNT] [FAN_COUNT] crc8 |
+|GetTemp     | AA 02 20 crc8                 | C5 [byteCnt] 20 [TEMP_COUNT] temp0_H temp0_L temp1_H temp1_L temp2_H temp2_L temp3_H temp3_L crc8 |
+|GetFanRpm   | AA 02 30 crc8                 | C5 [byteCnt] 30 [FAN_COUNT] rpm0_H rpm0_L rpm1_H rpm1_L crc8 |
+|GetFanPwm   | AA 03 31 [channel] crc8       | C5 [byteCnt] 31 [channel] [pwm] crc8 |
+|SetFanPwm   | AA 04 32 [channel] [pwm] crc8 | C5 [byteCnt] 32 crc8   (answer byte2: 32 = ok, FF = error) |
+
+- All numbers are hex.
+- The second bytes is always the count of remaining bytes in this message, beginning with the next (third) byte.
+- Data formats
+  - temperature: int16_t, scaled by 10
+  - rpm: uint16_t
+  - pwm: uint8_t [0..100 %]
+- Communication parameters
+  - 57600 Baud, 8N1
+- Only for the ProbeDevice command, Argus Monitor expects the answer from the device within 100msec.
+- If the 'Argus Controller Hardware' option in Settings/Stability is enabled, Argus Monitor will probe COM1..COM10 for Argus Controller devices and will use the first two devices as additional HW Monitor sources.
+- CRC8 calculation
+```
+uint8_t crc8(uint8_t crc, uint8_t data)
+{
+    crc = crc ^ data;
+    for (uint8_t i = 0; i < 8; i++) {
+        if (crc & 0x01)
+            crc = (crc >> 1) ^ 0x8C;
+        else
+            crc >>= 1;
+    }
+    return crc;
+}
+```
 
 
 ## Lizenz
