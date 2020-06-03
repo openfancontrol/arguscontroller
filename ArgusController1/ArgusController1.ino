@@ -3,7 +3,7 @@
 // Argus Controller Hardware
 // main module
 // Copyright 2020 Argotronic UG (haftungsbeschraenkt)
-// Version: 1.00
+// Version: 1.01
 //
 // License: CC BY-SA 4.0
 // https://creativecommons.org/licenses/by-sa/4.0/
@@ -29,6 +29,7 @@
 
 //#define DEBUG_OUTPUT
 //#define FAKE_SENSORS
+// #define PIN_LED 13 // Arduino Nano built-in LED, free to use
 //=========================================================
 // end user configuration
 
@@ -47,7 +48,18 @@ uint8_t                                       buffer[20];
 //---------------------------------------------------------
 void setup()
 {
-    delay(1000);
+    delay(200);
+
+    // flash LED on App start
+#ifdef PIN_LED
+    pinMode(PIN_LED, OUTPUT);
+    for (uint8_t i = 0; i < 2; i++) {
+        digitalWrite(PIN_LED, HIGH);
+        delay(25);
+        digitalWrite(PIN_LED, LOW);
+        delay(200);
+    }
+#endif
 
     Serial.begin(57600);
 
