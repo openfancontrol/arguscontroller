@@ -29,10 +29,12 @@ Data formats
 Communication parameters
 57600 Baud, 8N1
 
-Only for the ProbeDevice command, Argus Monitor expects the answer from the device within 100msec.
+Only for the ProbeDevice command, Argus Monitor expects the answer from the device within 200msec.
 
-If the 'Argus Controller Hardware' option in Settings/Stability is enabled,
-Argus Monitor will probe COM1..COM10 for Argus Controller devices and will use the first two devices as additional HW Monitor sources.
+If the 'Argus Controller hardware support' option in Settings/Stability is enabled,
+Argus Monitor will probe the specified COM-Ports for Argus Controller devices.
+It will use the first 4 devices (if specified and available) as additional HW Monitor sources within the application.
+
 -----------------------------------------------------------------------------*/
 // clang-format on
 
@@ -133,7 +135,7 @@ private:
                     if (crc8 == data) {
                         uint8_t cmd = receiveBuffer[2];
                         switch (cmd) {
-                        case CmdProbeDevice:    // answer CmdProbeDevice at once (100msec timeout in Argus Monitor on Argus Controller init)
+                        case CmdProbeDevice:    // answer CmdProbeDevice at once (200msec timeout in Argus Monitor on Argus Controller init)
                             uint8_t b[4];
                             b[0] = cmd;
                             b[1] = DEVID;
@@ -167,8 +169,8 @@ private:
             }
         }
 
-        // reset message receive state machine on incomplete messages with a 200msec timeout
-        if ((receiveState != 0) && ((millis() - timeStartMsg) > 200)) {
+        // reset message receive state machine on incomplete messages with a 250msec timeout
+        if ((receiveState != 0) && ((millis() - timeStartMsg) > 250)) {
             receiveState = 0;
             dbgPrintln("receiveState reset");
         }

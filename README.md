@@ -44,8 +44,10 @@ Argus Monitor will detect and use any such device as long as the serial communic
   - pwm: uint8_t [0..100 %]
 - Communication parameters
   - 57600 Baud, 8N1
-- Only for the ProbeDevice command, Argus Monitor expects the answer from the device within 100msec.
-- If the 'Argus Controller Hardware' option in Settings/Stability is enabled, Argus Monitor will probe COM1..COM10 for Argus Controller devices and will use the first two devices as additional HW Monitor sources.
+- Only for the ProbeDevice command, Argus Monitor expects the answer from the device within 200msec.
+- If the 'Argus Controller hardware support' option in Settings/Stability is enabled, Argus Monitor will probe the specified COM-Ports for Argus Controller devices.
+It will use the first 4 devices (if specified and available) as additional HW Monitor sources within the application.
+
 - CRC8 calculation
 ```
 uint8_t crc8(uint8_t crc, uint8_t data)
