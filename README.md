@@ -28,13 +28,15 @@ Argus Monitor will detect and use any such device as long as the serial communic
 
 ## Communication protocol
 
-| Command    | Argus Monitor request         | Argus Controller answer |
+| Command    | Argus Monitor request                 | Argus Controller answer |
 |---|---|---|
-|ProbeDevice | AA 02 01 crc8                 | C5 [byteCnt] 01 [DEVICE_ID] [TEMP_COUNT] [FAN_COUNT] crc8 |
-|GetTemp     | AA 02 20 crc8                 | C5 [byteCnt] 20 [TEMP_COUNT] temp0_H temp0_L temp1_H temp1_L temp2_H temp2_L temp3_H temp3_L crc8 |
-|GetFanRpm   | AA 02 30 crc8                 | C5 [byteCnt] 30 [FAN_COUNT] rpm0_H rpm0_L rpm1_H rpm1_L crc8 |
-|GetFanPwm   | AA 03 31 [channel] crc8       | C5 [byteCnt] 31 [channel] [pwm] crc8 |
-|SetFanPwm   | AA 04 32 [channel] [pwm] crc8 | C5 [byteCnt] 32 crc8   (answer byte2: 32 = ok, FF = error) |
+|ProbeDevice | AA 02 01 crc8                         | C5 [byteCnt] 01 [DEVICE_ID] [TEMP_COUNT] [FAN_COUNT] crc8 |
+|GetTemp     | AA 02 20 crc8                         | C5 [byteCnt] 20 [TEMP_COUNT] temp0_H temp0_L temp1_H temp1_L temp2_H temp2_L temp3_H temp3_L crc8 |
+|GetFanRpm   | AA 02 30 crc8                         | C5 [byteCnt] 30 [FAN_COUNT] rpm0_H rpm0_L rpm1_H rpm1_L crc8 |
+|GetFanPwm   | AA 03 31 [channel] crc8               | C5 [byteCnt] 31 [channel] [pwm] crc8 |
+|SetFanPwm   | AA 04 32 [channel] [pwm] crc8         | C5 [byteCnt] 32/FF crc8  # answer byte2: 32 = ok, FF = error |
+|EEReadByte  | AA 04 40 <addrH> <addrL> crc8         | C5 <byteCnt> 40 <VALUE_COUNT> <val> crc8 |
+|EEWriteByte | AA 05 41 <addrH> <addrL> <value> crc8 | C5 <byteCnt> 41/FF crc8  # answer byte2: 41 = ok, FF = error |
 
 - All numbers are hex.
 - The second bytes is always the count of remaining bytes in this message, beginning with the next (third) byte.
