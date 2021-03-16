@@ -2,8 +2,8 @@
 //---------------------------------------------------------
 // Argus Controller Hardware
 // main module
-// Copyright 2020 Argotronic UG (haftungsbeschraenkt)
-// Version: 1.01
+// Copyright 2020-2021 Argotronic UG (haftungsbeschraenkt)
+// Version: 1.02
 //
 // License: CC BY-SA 4.0
 // https://creativecommons.org/licenses/by-sa/4.0/
@@ -33,10 +33,14 @@
 //=========================================================
 // end user configuration
 
+// clang-format off
+#include "src/interface.h"
+// clang-format on
 #include "src/amcom.h"
 #include "src/debug.h"
 #include "src/ds18b20.h"
 #include "src/fanctrl.h"
+#include <EEPROM.h>
 
 AMCOM<DEVICE_ID, TEMPSENSOR_COUNT, FAN_COUNT> amCom;
 DS18B20                                       tempSensor[TEMPSENSOR_COUNT];
@@ -100,7 +104,7 @@ void loop()
         }
     }
 
-    // wait 1sec
+    // wait 1sec while receiving
     for (uint8_t i = 0; i < 10; i++) {
         amCom.delay(100);
         processCommands();
@@ -117,7 +121,7 @@ void processCommands()
         uint8_t  cmd   = qdata & 0xFF;
         uint8_t  channel;
         switch (cmd) {
-        case AMCMD::CmdGetTemp:
+        case AMAC_CMD::CmdGetTemp:
             buffer[0] = cmd;
             buffer[1] = TEMPSENSOR_COUNT;
             for (uint8_t i = 0; i < TEMPSENSOR_COUNT; i++) {
@@ -132,7 +136,7 @@ void processCommands()
             }
             amCom.send(buffer, 2 + 2 * TEMPSENSOR_COUNT);
             break;
-        case AMCMD::CmdGetFanRpm:
+        case AMAC_CMD::CmdGetFanRpm:
             buffer[0] = cmd;
             buffer[1] = FAN_COUNT;
             for (uint8_t i = 0; i < FAN_COUNT; i++) {
@@ -147,14 +151,14 @@ void processCommands()
             }
             amCom.send(buffer, 2 + 2 * FAN_COUNT);
             break;
-        case AMCMD::CmdGetFanPwm:
+        case AMAC_CMD::CmdGetFanPwm:
             channel   = (qdata >> 8) & 0xFF;
             buffer[0] = cmd;
             buffer[1] = channel;
             buffer[2] = fanctrl.getPwm(channel);
             amCom.send(buffer, 3);
             break;
-        case AMCMD::CmdSetFanPwm:
+        case AMAC_CMD::CmdSetFanPwm: {
             channel     = (qdata >> 8) & 0xFF;
             uint8_t pwm = (qdata >> 16) & 0xFF;
             if (fanctrl.setPwm(channel, pwm)) {
@@ -164,6 +168,26 @@ void processCommands()
             }
             amCom.send(buffer, 1);
             break;
+        }
+        case AMAC_CMD::CmdEEReadByte: {
+            uint16_t eeAddr = (qdata >> 8) & 0xFFFF;
+            buffer[0]       = cmd;
+            buffer[1]       = 1;
+            buffer[2]       = EEPROM.read(eeAddr);
+            amCom.send(buffer, 3);
+            break;
+        }
+        case AMAC_CMD::CmdEEWriteByte: {
+            uint16_t eeAddr = (qdata >> 8) & 0xFFFF;
+            uint8_t  value  = (qdata >> 24) & 0xFF;
+            if (value != EEPROM.read(eeAddr)) {
+                EEPROM.write(eeAddr, value);
+                delay(20);    // wait for EE value to be written
+            }
+            buffer[0] = cmd;    // ok code (if needed, do an additional verify here)
+            amCom.send(buffer, 1);
+            break;
+        }
         default:
             break;
         }

@@ -2,7 +2,7 @@
 //---------------------------------------------------------
 // Argus Controller (Open Hardware)
 // fanctrl.h
-// Copyright 2020 Argotronic UG (haftungsbeschraenkt)
+// Copyright 2020-2021 Argotronic UG (haftungsbeschraenkt)
 //
 // License: CC BY-SA 4.0
 // https://creativecommons.org/licenses/by-sa/4.0/
@@ -19,13 +19,15 @@
 #define PIN_TACH_FAN2 3    // INT1
 #define CYCLES_PER_REVOLUTION 2.0
 
+#include <EEPROM.h>
+
 class FANCTRL {
 
 public:
     FANCTRL()
         : fanCount(0)
         , lastUpdateTime(0)
-        , rpm({ 0 })
+        , rpm { 0 }
     {
     }
 
@@ -50,6 +52,15 @@ public:
                 pinMode(PIN_PWM_FAN2, OUTPUT);
 
                 OCR1B = 160;    // fan1 50%
+            }
+        }
+
+        // PWM Power-On value from EEPROM
+        // you can change the PWM Power-On value from within Argus Monitor and store it to EEPROM permanently
+        for (uint8_t i = 0; i < min(2, fanCount); i++) {
+            uint8_t pwm = EEPROM.read(EEADDR_PWM_POWERON_0 + i);
+            if (pwm <= 100) {
+                setPwm(i, pwm);
             }
         }
     }
