@@ -12,7 +12,6 @@
 
 #ifndef _AMCOM_H_
 
-#include "debug.h"
 #include "queue.h"
 #include <util/crc16.h>
 

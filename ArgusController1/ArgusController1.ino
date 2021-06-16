@@ -1,9 +1,8 @@
-
 //---------------------------------------------------------
 // Argus Controller Hardware
 // main module
 // Copyright 2020-2021 Argotronic UG (haftungsbeschraenkt)
-// Version: 1.02
+// Version: 1.10
 //
 // License: CC BY-SA 4.0
 // https://creativecommons.org/licenses/by-sa/4.0/
@@ -14,40 +13,51 @@
 // Arduino Nano driver (CH340 version): http://www.wch.cn/downloads/CH341SER_EXE.html
 //---------------------------------------------------------
 
+
 // start user configuration
-//=========================================================
-#define DEVICE_ID 1    // Argus Monitor can manage up to 4 different Argus Controller devices
+//=============================================================================
+#define DEVICE_ID 1    // Argus Monitor can manage up to 4 different Argus Controller devices, each must have an unique Device ID
 
-#define TEMPSENSOR_COUNT 4
+#define TEMPERATURE_ONEWIRE    // activate for 1-wire temperature sensors DS18B20, deactivate for 10k-NTC temperature sensors
 
-#define PIN_TEMPSENSOR_1 A0
+#define TEMPSENSOR_COUNT 4    // number of temperature sensors
+
+#define PIN_TEMPSENSOR_1 A0    // temperature sensor pins, any Arduino pin for DS18B20 sensors, analog Arduino pin for NTC sensors
 #define PIN_TEMPSENSOR_2 A1
 #define PIN_TEMPSENSOR_3 A2
 #define PIN_TEMPSENSOR_4 A3
 
 #define FAN_COUNT 2
 
-//#define DEBUG_OUTPUT
+//#define DEBUG_OUTPUT    // print some debug output via serial port
 //#define FAKE_SENSORS
 // #define PIN_LED 13 // Arduino Nano built-in LED, free to use
-//=========================================================
+//=============================================================================
 // end user configuration
+
 
 // clang-format off
 #include "src/interface.h"
+#include "src/debug.h"
 // clang-format on
 #include "src/amcom.h"
-#include "src/debug.h"
 #include "src/ds18b20.h"
+#include "src/ntcsensor.h"
 #include "src/fanctrl.h"
 #include <EEPROM.h>
 
 AMCOM<DEVICE_ID, TEMPSENSOR_COUNT, FAN_COUNT> amCom;
-DS18B20                                       tempSensor[TEMPSENSOR_COUNT];
-bool                                          tempSensorPresent[TEMPSENSOR_COUNT];
-const uint8_t                                 owPin[TEMPSENSOR_COUNT] = { PIN_TEMPSENSOR_1, PIN_TEMPSENSOR_2, PIN_TEMPSENSOR_3, PIN_TEMPSENSOR_4 };
-FANCTRL                                       fanctrl;
-uint8_t                                       buffer[20];
+
+#ifdef TEMPERATURE_ONEWIRE
+DS18B20 ds18Sensor[TEMPSENSOR_COUNT];
+bool    ds18SensorPresent[TEMPSENSOR_COUNT];
+#else
+NTCSENSOR ntcSensor;
+#endif
+
+const uint8_t sensorPin[TEMPSENSOR_COUNT] = { PIN_TEMPSENSOR_1, PIN_TEMPSENSOR_2, PIN_TEMPSENSOR_3, PIN_TEMPSENSOR_4 };
+FANCTRL       fanctrl;
+uint8_t       buffer[20];    // allocate only once
 
 //---------------------------------------------------------
 void setup()
@@ -69,10 +79,14 @@ void setup()
 
     dbgPrintln("");
     for (uint8_t i = 0; i < TEMPSENSOR_COUNT; i++) {
+#ifdef TEMPERATURE_ONEWIRE
         dbgPrint("Channel ");
         dbgDec(i + 1);
         dbgPrint(": ");
-        tempSensorPresent[i] = tempSensor[i].init(owPin[i]);
+        ds18SensorPresent[i] = ds18Sensor[i].init(sensorPin[i]);
+#else
+        ntcSensor.addPin(sensorPin[i]);
+#endif
     }
 
     fanctrl.init(FAN_COUNT);
@@ -81,11 +95,13 @@ void setup()
 //---------------------------------------------------------
 void loop()
 {
+#ifdef TEMPERATURE_ONEWIRE
     for (uint8_t i = 0; i < TEMPSENSOR_COUNT; i++) {
-        if (tempSensorPresent[i]) {    // process only avalilable sensors
-            tempSensor[i].start();
+        if (ds18SensorPresent[i]) {    // process only avalilable sensors
+            ds18Sensor[i].start();
         }
     }
+#endif
 
     // wait 1.1sec DS18B20 max. conversion time (resolution dependent)
     for (uint8_t i = 0; i < 11; i++) {
@@ -95,13 +111,19 @@ void loop()
 
     dbgPrintln("");
     for (uint8_t i = 0; i < TEMPSENSOR_COUNT; i++) {
-        if (tempSensorPresent[i]) {    // process only avalilable sensors
-            tempSensor[i].read();
-            dbgPrint("Channel ");
-            dbgDec(i + 1);
-            dbgPrint(" temperature: ");
-            dbgDecln(tempSensor[i].temperature());
+        int16_t temp = 0;
+#ifdef TEMPERATURE_ONEWIRE
+        if (ds18SensorPresent[i]) {    // process only avalilable sensors
+            ds18Sensor[i].read();
+            temp = ds18Sensor[i].temperature();
         }
+#else
+        temp = ntcSensor.temperature(i);
+#endif
+        dbgPrint("Channel ");
+        dbgDec(i + 1);
+        dbgPrint(" temperature: ");
+        dbgDecln(temp);
     }
 
     // wait 1sec while receiving
@@ -128,8 +150,10 @@ void processCommands()
                 int16_t temperature;
 #ifdef FAKE_SENSORS
                 temperature = 305 + 10 * i;    // 30.5C + i
+#elif defined TEMPERATURE_ONEWIRE
+                temperature = ds18Sensor[i].temperature();
 #else
-                temperature = tempSensor[i].temperature();
+                temperature = ntcSensor.temperature(i);
 #endif
                 buffer[2 + i * 2] = temperature >> 8;
                 buffer[3 + i * 2] = temperature & 0xFF;
