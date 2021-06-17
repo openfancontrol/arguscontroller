@@ -24,8 +24,8 @@ class NTCSENSOR {
 
 public:
     NTCSENSOR()
-        : _temperature { 0 }
-        , _adcpin { 0 }
+        : _temperature{ 0 }
+        , _adcpin{ 0 }
         , _tempCount(0)
     {
     }
@@ -44,11 +44,10 @@ public:
     {
         for (uint8_t i = 0; i < _tempCount; i++) {
             if (_adcpin[i] != 0) {
-                float analogValue = analogRead(_adcpin[i]);
-                // Konvertieren des analogen Wertes in einen Widerstandswert
-                float resistorValue = (1023 / analogValue) - 1;
-                resistorValue       = 10000 / resistorValue;
-                double temp         = log(((10240000 / analogValue) - 10000));
+                float analogValue   = analogRead(_adcpin[i]);
+                float resistorValue = (1023.0 / analogValue) - 1.0;
+                resistorValue       = 10000.0 / resistorValue;
+                double temp         = log(((10240000.0 / analogValue) - 10000.0));
                 double kelvin       = 1 / (0.001129148 + (0.000234125 * temp) + (0.0000000876741 * temp * temp * temp));
                 _temperature[i]     = (int16_t)((kelvin - 273.15) * 10.0);
             } else {

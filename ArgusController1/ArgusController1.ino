@@ -95,6 +95,7 @@ void setup()
 //---------------------------------------------------------
 void loop()
 {
+    // 1-wire meassure start
 #ifdef TEMPERATURE_ONEWIRE
     for (uint8_t i = 0; i < TEMPSENSOR_COUNT; i++) {
         if (ds18SensorPresent[i]) {    // process only avalilable sensors
@@ -103,18 +104,30 @@ void loop()
     }
 #endif
 
-    // wait 1.1sec DS18B20 max. conversion time (resolution dependent)
+    // 1-wire wait time (1.1sec DS18B20 max. conversion time, resolution dependent)
     for (uint8_t i = 0; i < 11; i++) {
         amCom.delay(100);
         processCommands();
     }
 
+    // temperature sensors read
+#ifdef TEMPERATURE_ONEWIRE
+    for (uint8_t i = 0; i < TEMPSENSOR_COUNT; i++) {
+        if (ds18SensorPresent[i]) {    // process only avalilable sensors
+            ds18Sensor[i].read();
+        }
+    }
+#else
+    ntcSensor.read();
+#endif
+
+    // debug output
+#ifdef DEBUG_OUTPUT
     dbgPrintln("");
     for (uint8_t i = 0; i < TEMPSENSOR_COUNT; i++) {
         int16_t temp = 0;
 #ifdef TEMPERATURE_ONEWIRE
         if (ds18SensorPresent[i]) {    // process only avalilable sensors
-            ds18Sensor[i].read();
             temp = ds18Sensor[i].temperature();
         }
 #else
@@ -122,10 +135,13 @@ void loop()
 #endif
         dbgPrint("Channel ");
         dbgDec(i + 1);
-        dbgPrint(" temperature: ");
-        dbgDecln(temp);
+        dbgPrint(" temperature x10: ");
+        dbgDec(temp);
+        dbgPrintln(" C");
     }
+#endif
 
+    // additional loop wait time befor next meassurement
     // wait 1sec while receiving
     for (uint8_t i = 0; i < 10; i++) {
         amCom.delay(100);
