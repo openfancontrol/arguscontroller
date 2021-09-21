@@ -21,6 +21,7 @@
 #define TEMPERATURE_ONEWIRE    // activate for 1-wire temperature sensors DS18B20, deactivate for 10k-NTC temperature sensors
 
 #define TEMPSENSOR_COUNT 4    // number of temperature sensors
+// #define TEMPSENSOR_COUNT 2    // example for 2 temperature sensors only, see also line 60
 
 #define PIN_TEMPSENSOR_1 A0    // temperature sensor pins, any Arduino pin for DS18B20 sensors, analog Arduino pin for NTC sensors
 #define PIN_TEMPSENSOR_2 A1
@@ -56,8 +57,10 @@ NTCSENSOR ntcSensor;
 #endif
 
 const uint8_t sensorPin[TEMPSENSOR_COUNT] = { PIN_TEMPSENSOR_1, PIN_TEMPSENSOR_2, PIN_TEMPSENSOR_3, PIN_TEMPSENSOR_4 };
-FANCTRL       fanctrl;
-uint8_t       buffer[20];    // allocate only once
+// const uint8_t sensorPin[TEMPSENSOR_COUNT] = { PIN_TEMPSENSOR_1, PIN_TEMPSENSOR_2 };    // example for 2 temperature sensors only
+
+FANCTRL fanctrl;
+uint8_t buffer[20];    // allocate only once
 
 //---------------------------------------------------------
 void setup()
