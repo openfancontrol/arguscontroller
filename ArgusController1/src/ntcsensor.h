@@ -1,7 +1,7 @@
 //---------------------------------------------------------
 // Argus Controller (Open Hardware)
 // ntcsensor.h
-// Copyright 2020-2021 Argotronic UG (haftungsbeschraenkt)
+// Copyright 2020-2023 Argotronic GmbH
 //
 // License: CC BY-SA 4.0
 // https://creativecommons.org/licenses/by-sa/4.0/

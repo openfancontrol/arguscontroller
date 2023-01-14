@@ -1,7 +1,7 @@
 //---------------------------------------------------------
 // Argus Controller Hardware
 // main module
-// Copyright 2020-2021 Argotronic UG (haftungsbeschraenkt)
+// Copyright 2020-2023 Argotronic GmbH
 // Version: 1.10
 //
 // License: CC BY-SA 4.0

@@ -2,7 +2,7 @@
 //---------------------------------------------------------
 // Argus Controller (Open Hardware)
 // debug.h
-// Copyright 2020 Argotronic UG (haftungsbeschraenkt)
+// Copyright 2020-2023 Argotronic GmbH
 //
 // License: CC BY-SA 4.0
 // https://creativecommons.org/licenses/by-sa/4.0/
