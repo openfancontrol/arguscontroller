@@ -9,7 +9,7 @@
 
 ## Description
 
-We have made an [example](ArduinoNanoExample1) to demonstrate such a device with the help of the very common Arduino Nano or Arduino Uno platform.<br>
+We have made an [example](https://github.com/openfancontrol/arguscontroller/tree/master/ArgusController1) to demonstrate such a device with the help of the very common Arduino Nano or Arduino Uno platform.<br>
 The example demonstrates the creation and set-up of temperature channels and fan control channels.<br>
 We show here a hardware solution for the popular Dallas DS18B20 temperature sensors and for connecting 4-pin pwm controlled fans.<br>
 With additional circuitry and software changes, you could control 3-pin voltage controlled fans also or use different  temperature sensors.<br><br>
@@ -17,9 +17,23 @@ You can adapt the hardware to your needs, built it around a completely different
 Each hardware device can have up to 6 temperature channels and 6 fan control channels.<br>
 Argus Monitor will detect and use any such device as long as the serial communication protocol (see below) is respected.<br>
 
+
+## :warning: This code is just an example
+
+This github code is only an example for a specific Arduino, in this case for the Arduino Nano.<br>
+We use it to describe the SW interface - to get sensor values from self-made electronics into Argus and to get a fan control option from Argus to external self-made electronics.<br><br>
+**You can use any embedded controllers, sensor devices and circuitry you like as long as you obey the protocoll.**<br><br>
+**This whole project here is an option for makers, please note that you should know what you are doing, we can't give support for user developments.**<br>
+
+
+## HW/SW description
+
 [:us: Detailed HW/SW description (English)](https://help.argusmonitor.com/ArgusController.html)
 
 [:de: Detaillierte HW/SW Beschreibung (Deutsch)](https://hilfe.argusmonitor.com/ArgusController.html)
+
+
+## Pictures of test setup
 
 ![pic](Images/ArgusControllerNano1.jpg)
 
